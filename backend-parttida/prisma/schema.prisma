@@ -1,0 +1,179 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  usuario_id                String   @id @default(uuid())
+  nome_completo             String
+  apelido                   String
+  senha                     String
+  email                     String   @unique
+  que_esporte_pratica       String
+  qual_seu_esporte_favorito String?
+  quanto_tempo_pratica      String?
+  genero                    String?
+  altura                    String?
+  cpf                       String?  @unique
+  cnpj                      String?  @unique
+  data_de_nascimento        String
+  created_at                DateTime @default(now())
+  update_at                 DateTime @updatedAt
+
+  profissional        Profissional?
+  donoDeQuadra        DonoDeQuadra?
+  perfil_Usuario      Perfil_Usuario?
+  perfil_Profissional Perfil_Profissional?
+  comentarios         Comentario[]
+  curtidas            Curtida[]
+  notificacoes        Notificacao[]
+  posts               Post[]
+  aulas               Aulas[]
+
+  followers           Segue[]               @relation("seguidores")
+  following           Segue[]               @relation("seguindo")
+  CurtidasComentarios CurtidasComentarios[]
+}
+
+model Segue {
+  seguidor   Usuario @relation("seguidores", fields: [seguidorId], references: [usuario_id])
+  seguidorId String
+  seguindo   Usuario @relation("seguindo", fields: [seguindoId], references: [usuario_id])
+  seguindoId String
+
+  @@id([seguidorId, seguindoId])
+}
+
+model Profissional {
+  id              String  @id @default(uuid())
+  profissional_id String  @unique
+  user            Usuario @relation(fields: [profissional_id], references: [usuario_id])
+  formacao        String
+  celular         String?
+  curriculo       String
+
+  created_at DateTime @default(now())
+  update_at  DateTime @updatedAt
+  Aulas      Aulas[]
+}
+
+model DonoDeQuadra {
+  donoDeQuadraId String   @id @default(uuid())
+  userId         String   @unique
+  quadras        Quadra[]
+  user           Usuario  @relation(fields: [userId], references: [usuario_id])
+}
+
+model Quadra {
+  quadraId         String @id @default(uuid())
+  donoId           String
+  localizacao      String
+  tipo_de_quadra   String // qual o tipo de quadra que ele tem.... ex:basquete/futebol/volei 
+  tempo_de_atuacao String //quanto tempo a quadra está no mercado 
+
+  created_at   DateTime      @default(now())
+  update_at    DateTime      @updatedAt
+  DonoDeQuadra DonoDeQuadra? @relation(fields: [donoId], references: [donoDeQuadraId])
+  FotoQuadra   FotoQuadra[]
+}
+
+model FotoQuadra {
+  id       String @id @default(uuid())
+  src      String
+  quadraId String
+  quadra   Quadra @relation(fields: [quadraId], references: [quadraId])
+}
+
+model Perfil_Usuario {
+  id          String @id @default(uuid())
+  usuarioId   String @unique
+  foto_perfil String
+  descricao   String
+
+  user Usuario @relation(fields: [usuarioId], references: [usuario_id])
+
+  created_at DateTime @default(now())
+  update_at  DateTime @updatedAt
+}
+
+model Perfil_Profissional {
+  id             String @id @default(uuid())
+  profissionalId String @unique
+
+  usuario Usuario @relation(fields: [profissionalId], references: [usuario_id])
+
+  created_at DateTime @default(now())
+  update_at  DateTime @updatedAt
+}
+
+model CurtidasComentarios {
+  id            String     @id @default(uuid())
+  usuarioId     String
+  comentario_id String
+  usuario       Usuario    @relation(fields: [usuarioId], references: [usuario_id])
+  comentario    Comentario @relation(fields: [comentario_id], references: [id])
+}
+
+model Comentario {
+  id        String                @id @default(uuid())
+  conteudo  String
+  usuarioId String
+  postId    String
+  post      Post                  @relation(fields: [postId], references: [post_id])
+  usuario   Usuario               @relation(fields: [usuarioId], references: [usuario_id])
+  curtidas  CurtidasComentarios[]
+}
+
+model Curtida {
+  id        String  @id @default(uuid())
+  usuarioId String
+  post_id   String
+  usuario   Usuario @relation(fields: [usuarioId], references: [usuario_id])
+  post      Post    @relation(fields: [post_id], references: [post_id])
+}
+
+model Notificacao {
+  id         String  @id @default(uuid())
+  conteudo   String?
+  titulo     String
+  usuario_id String
+
+  user Usuario @relation(fields: [usuario_id], references: [usuario_id])
+
+  created_at DateTime @default(now())
+  update_at  DateTime @updatedAt
+}
+
+model Post {
+  post_id    String  @id @default(uuid())
+  usuario_id String?
+  foto_post  String
+  descricao  String?
+
+  usuario Usuario? @relation(fields: [usuario_id], references: [usuario_id])
+
+  comentarios Comentario[]
+  curtidas    Curtida[]
+
+  created_at DateTime @default(now())
+  update_at  DateTime @updatedAt
+}
+
+model Aulas {
+  aulas_id     String   @default(uuid())
+  professor_id String
+  usuario_id   String
+  modalidade   String
+  horario      DateTime
+
+  created_at DateTime     @default(now())
+  update_at  DateTime     @updatedAt
+  professor  Profissional @relation(fields: [professor_id], references: [profissional_id])
+  usuario    Usuario      @relation(fields: [usuario_id], references: [usuario_id])
+
+  @@id([aulas_id, professor_id])
+}

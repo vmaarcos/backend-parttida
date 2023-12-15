@@ -1,0 +1,33 @@
+version: '3.6'
+
+services:
+  mysqldb:
+    image: mysql:latest
+    container_name: parttida-mysql
+    restart: unless-stopped
+    env_file: ./.env
+    environment: 
+      - MYSQL_ROOT_PASSWORD=$MYSQL_PASSWORD
+      - MYSQL_DATABASE=$MYSQL_DATABASE
+      - MYSQL_TCP_PORT=$MYSQL_DOCKER_PORT
+    ports: 
+      - $MYSQL_LOCAL_PORT:$MYSQL_DOCKER_PORT
+    healthcheck: 
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    
+  app: 
+    depends_on:
+      mysqldb: 
+        condition: service_healthy
+    build: 
+      context: ./
+      dockerfile: Dockerfile
+    working_dir: /app/parttida-backend
+    container_name: parttida-api
+    restart: unless-stopped
+    ports:
+      - "3003:5555"
+      - $API_LOCAL_PORT:$API_DOCKER_PORT
+    env_file: ./.env
