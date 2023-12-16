@@ -23,14 +23,13 @@ class HelloController {
 
     @PostMapping("/create") // POST /api/create
     public String create(@RequestBody String data) {
-        // Lógica para criar um recurso com os dados fornecidos.
+      
         return "Recurso Criado: " + data;
     }
 
     @PutMapping("/update/{id}") // PUT /api/update/o id aqui
     public String update(@PathVariable Long id, @RequestBody String data) {
-        // Lógica para atualizar um recurso com os dados fornecidos.
-        
+   
         return "Atualizar recursos " + id + " data do update: " + data;
     }
 
