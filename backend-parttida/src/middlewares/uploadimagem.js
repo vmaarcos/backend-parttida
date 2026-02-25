@@ -13,6 +13,7 @@ const storage = multer.diskStorage({
         cb(null, 'uploads/');
     },
     filename: function (req, file, cb) {
+        //antigo datenow
         cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
     }
 });
